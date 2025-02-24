@@ -1,0 +1,70 @@
+services:
+  supplier_db:
+    image: postgres:16
+    container_name: supplier_db
+    environment:
+      POSTGRES_DB: supplier_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    volumes:
+      - supplier_db_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+    ports:
+      - "5432:5432"
+
+  order_db:
+    image: postgres:16
+    container_name: order_db
+    environment:
+      POSTGRES_DB: order_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 5678
+    volumes:
+      - order_db_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+    ports:
+      - "5433:5432"
+
+  supplier_service:
+    build:
+      context: ./supplier-service
+    container_name: supplier_service
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:1234@supplier_db:5432/supplier_db
+    volumes:
+      - ./supplier-service:/app
+    networks:
+      - app_network
+    depends_on:
+      - supplier_db
+    env_file:
+      - ./supplier-service/.env
+
+  order_service:
+    build:
+      context: ./order-service
+    container_name: order_service
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://postgres:5678@order_db:5432/order_db
+    volumes:
+      - ./order-service:/app
+    networks:
+      - app_network
+    depends_on:
+      - order_db
+    env_file:
+      - ./order-service/.env
+
+volumes:
+  supplier_db_data:
+  order_db_data:
+
+networks:
+  app_network:
+    driver: bridge
