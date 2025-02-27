@@ -1,4 +1,5 @@
 services:
+  # Each service has it own Database
   supplier_db:
     image: postgres:16
     container_name: supplier_db
@@ -27,6 +28,21 @@ services:
     ports:
       - "5433:5432"
 
+  approval_db:
+    image: postgres:16
+    container_name: approval_db
+    environment:
+      POSTGRES_DB: approval_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 9101
+    volumes:
+      - approval_db_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+    ports:
+      - "5434:5432"
+
+  # Build and run services on different ports but same network
   supplier_service:
     build:
       context: ./supplier-service
@@ -61,10 +77,42 @@ services:
     env_file:
       - ./order-service/.env
 
+  approval_service:
+    build:
+      context: ./approval-service
+    container_name: approval_service
+    ports:
+      - "8002:8002"
+    environment:
+      - DATABASE_URL=postgresql://postgres:9101@approval_db:5432/approval_db
+    volumes:
+      - ./approval-service:/app
+    networks:
+      - app_network
+    depends_on:
+      - approval_db
+    env_file:
+      - ./approval-service/.env
+
+  # RabbitMQ with port 5672 for messaging and 15672 for UI
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    networks:
+      - app_network
+# Where service's database keep its data
 volumes:
   supplier_db_data:
   order_db_data:
+  approval_db_data:
 
+# Network that services use for communication
 networks:
   app_network:
     driver: bridge

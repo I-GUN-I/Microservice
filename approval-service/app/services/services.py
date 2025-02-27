@@ -10,9 +10,9 @@ def get_approval_by_id(db: Session, approval_id: int):
     """Retrieve an approval by its ID."""
     return db.query(models.Approval).filter(models.Approval.id == approval_id).first()
 
-def get_approval_by_order_id(db: Session, approval_id: int):
+def get_approval_by_order_id(db: Session, order_id: int):
     """Retrieve an approval by order's ID."""
-    return db.query(models.Approval).filter(models.Approval.id == approval_id).first()
+    return db.query(models.Approval).filter(models.Approval.order_id == order_id).first()
 
 def update_approval_status(db: Session, approval_id: int, approval_update: schemas.ApprovalUpdate):
     """Update the status of an approval."""
@@ -20,11 +20,10 @@ def update_approval_status(db: Session, approval_id: int, approval_update: schem
     approval = db.query(models.Approval).filter(models.Approval.id == approval_id).first()
 
     if not approval:
-        raise ValueError(f"Approval with ID {approval_id} not found.")
+        raise ValueError(f"Approval ID '{approval_id}' not found.")
 
     # Update the status
     approval.order_status = approval_update.order_status
-    approval.approval_date = func.now()  # Set the approval date when the status is updated
 
     # Commit the changes to the database
     db.commit()
