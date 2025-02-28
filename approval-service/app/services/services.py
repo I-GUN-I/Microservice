@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from app.models import models
 from app.schemas import schemas
 
@@ -24,6 +25,8 @@ def update_approval_status(db: Session, approval_id: int, approval_update: schem
 
     # Update the status
     approval.order_status = approval_update.order_status
+    # Set approval_date
+    approval.approval_date = func.now()
 
     # Commit the changes to the database
     db.commit()

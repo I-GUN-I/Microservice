@@ -18,14 +18,14 @@ def create_supplier(db: Session, supplier: schemas.SupplierCreate):
     if exist_supplier:
         raise ValueError(f"Supplier '{supplier.name}' already exists.")
 
-    # Model to a dictionary for converting product names to lowercase
+    # supplier Model to a supplier_data dictionary for converting product names to lowercase
     supplier_data = supplier.model_dump()
     if "products" in supplier_data and supplier_data["products"]:
         supplier_data["products"] = [p.lower() for p in supplier_data["products"]]
     
     # Back to Model
     db_supplier = models.Supplier(**supplier_data)
-
+    # Add to database
     db.add(db_supplier)
     db.commit()
     db.refresh(db_supplier)
@@ -34,7 +34,7 @@ def create_supplier(db: Session, supplier: schemas.SupplierCreate):
 def update_supplier(db: Session, supplier_id: int, supplier_update: schemas.SupplierUpdate):
     """Update an existing supplier."""
     db_supplier = db.query(models.Supplier).filter(models.Supplier.id == supplier_id).first()
-    # Raise error if not found
+    # Raise error if Supplier is not found
     if not db_supplier:
         raise ValueError(f"Supplier ID '{supplier_id}' not found.")
 
@@ -44,17 +44,18 @@ def update_supplier(db: Session, supplier_id: int, supplier_update: schemas.Supp
         if exist_supplier and exist_supplier.id != supplier_id:
             raise ValueError(f"Supplier '{supplier_update.name}' already exists.")
 
-    # Exclude any fields that were not set 
+    # supplier_update Model to update_data dict, exclude any fields that were not set 
     update_data = supplier_update.model_dump(exclude_unset=True)
 
     # Convert product names to lowercase before updating
     if "products" in update_data and update_data["products"]:
         update_data["products"] = [p.lower() for p in update_data["products"]]
         
-    # Set atr in update_data
+    # Set model db_supplier attribute to update_data value
     for key, value in update_data.items():
         setattr(db_supplier, key, value)
-
+    
+    # Update db
     db.commit()
     db.refresh(db_supplier)
     return db_supplier
@@ -62,15 +63,16 @@ def update_supplier(db: Session, supplier_id: int, supplier_update: schemas.Supp
 def delete_supplier(db: Session, supplier_id: int):
     """Delete a supplier by ID."""
     db_supplier = db.query(models.Supplier).filter(models.Supplier.id == supplier_id).first()
+    # Raise error if can't find Supplier
     if not db_supplier:
         raise ValueError(f"Supplier ID '{supplier_id}' not found.")
-
+    # Delete supplier
     db.delete(db_supplier)
     db.commit()
 
 
 def find_best_supplier(db: Session, product_name: str, order_quantity: int):
-    """Find the best supplier based on case-insensitive product name search and order quantity."""
+    """Find the best supplier based on product name search and order quantity."""
     return (
         db.query(models.Supplier)
         .filter(

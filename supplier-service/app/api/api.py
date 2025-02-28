@@ -6,13 +6,13 @@ from app.core.database import get_db
 from app.schemas import schemas
 from app.services import services
 
-# Create an instance of APIRouter then define needed routes
+# Create an instance of APIRouter then define routes
 router = APIRouter()
 
-# Response_model is returned response format, in this case it a List of Supplier objects
+# Response_model is the return response format, in this case it a List of Supplier objects
 @router.get("/suppliers/", response_model=List[schemas.Supplier])
 
-# Injects the session (db) created by get_db() into the function
+# Injecthe Session (db) created by get_db() into the function
 def get_all_suppliers(db: Session = Depends(get_db)):
     """Retrieve all suppliers."""
     return services.get_all_suppliers(db)
@@ -30,21 +30,21 @@ def get_supplier(supplier_id: int, db: Session = Depends(get_db)):
 def create_supplier(supplier: schemas.SupplierCreate, db: Session = Depends(get_db)):
     """Create a new supplier."""
     try:
-        # update the supplier if nothing goes wrong
+        # Create the supplier
         return services.create_supplier(db=db, supplier=supplier)
     except ValueError as e:
-        # Raise an Error if can't find supplier
+        # Raise an Error if supplier already exists
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.put("/suppliers/{supplier_id}", response_model=schemas.Supplier)
 def update_supplier(supplier_id: int, supplier: schemas.SupplierUpdate, db: Session = Depends(get_db)):
     """Update an existing supplier."""
     try:
-        # create the supplier if nothing goes wrong
+        # Update the supplier
         db_supplier = services.update_supplier(db=db, supplier_id=supplier_id, supplier_update=supplier)
         return db_supplier
     except ValueError as e:
-        # Raise an Error if supplier already exists
+        # Raise an Error if can't find the supplier
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.delete("/suppliers/{supplier_id}", response_model=None)

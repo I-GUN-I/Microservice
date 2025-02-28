@@ -1,16 +1,9 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
-from enum import Enum
-
-# Enum for order status
-class OrderStatusEnum(str, Enum):
-    PENDING = "pending"
-    APPROVED = "approved"
-    REJECTED = "rejected"
 
 # Base schema for responses
-class ApprovalBase(BaseModel):
+class Approval(BaseModel):
     id: int
     order_title: str
     order_id: int
@@ -18,7 +11,7 @@ class ApprovalBase(BaseModel):
     order_amount: int
     order_price: float
     order_supplier: str
-    order_status: OrderStatusEnum = OrderStatusEnum.PENDING
+    order_status: str = "PENDING"
     order_receive: datetime
     approval_date: Optional[datetime] = None
 
@@ -26,7 +19,7 @@ class ApprovalBase(BaseModel):
         from_attributes = True
 
 class ApprovalUpdate(BaseModel):
-    order_status: OrderStatusEnum
+    order_status: str
 
     class Config:
         from_attributes = True

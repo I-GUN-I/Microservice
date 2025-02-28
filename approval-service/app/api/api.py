@@ -7,25 +7,33 @@ from app.services import services
 
 router = APIRouter()
 
-@router.get("/orders", response_model=List[schemas.Order])
-def get_all_orders(db: Session = Depends(get_db)):
-    """Get all orders."""
-    orders = services.get_all_orders(db)
-    return orders
+@router.get("/approvals", response_model=List[schemas.Approval])
+def get_all_approvals(db: Session = Depends(get_db)):
+    """Get all approvals."""
+    approval = services.get_all_approvals(db)
+    return approval
 
-@router.get("/orders/{order_id}", response_model=schemas.Order)
-def get_order(order_id: int, db: Session = Depends(get_db)):
+@router.get("/approvals/{approval_id}", response_model=schemas.Approval)
+def get_approval(approval_id: int, db: Session = Depends(get_db)):
     """Get an order by ID."""
-    order = services.get_order(db, order_id)
-    if not order:
-        raise HTTPException(status_code=404, detail=f"Order ID '{order_id}' not found")
-    return order
+    approval = services.get_approval_by_id(db, approval_id)
+    if not approval:
+        raise HTTPException(status_code=404, detail=f"Approval ID '{approval_id}' not found")
+    return approval
 
-@router.post("/orders", response_model=schemas.Order)
-def create_order(order: schemas.OrderCreate, db: Session = Depends(get_db)):
-    """Create a new order with a suitable supplier."""
+@router.get("/approvals/orders/{order_id}", response_model=schemas.Approval)
+def get_approval_by_order_id(order_id: int, db: Session = Depends(get_db)):
+    """Retrieve an approval by order's ID."""
+    approval = services.get_approval_by_order_id(db, order_id)
+    if not approval:
+        raise HTTPException(status_code=404, detail=f"Approval with Order ID '{order_id}' not found")
+    return approval
+
+@router.put("/approvals/{approval_id}", response_model=schemas.Approval)
+def update_approval_status(approval_id: int, approval_update: schemas.ApprovalUpdate,db: Session = Depends(get_db)):
+    """Update the status of an approval. The status are PENDING APPROVED and REJECTED"""
     try:
-        order_created = services.create_order(db, order)
-        return order_created
+        approval = services.update_approval_status(db, approval_id, approval_update)
+        return approval
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

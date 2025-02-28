@@ -1,10 +1,5 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, func, Enum
+from sqlalchemy import Column, Integer, String, Float, DateTime, func
 from app.core.database import Base
-
-class OrderStatusEnum(str, Enum):
-    PENDING = "pending"
-    APPROVED = "approved"
-    REJECTED = "rejected"
 
 # Base class for ORM
 class Approval(Base):
@@ -17,6 +12,6 @@ class Approval(Base):
     order_amount = Column(Integer, nullable=False)  # Quantity of the order
     order_price = Column(Float, nullable=False)  # Total price of the order
     order_supplier = Column(String, nullable=False)  # Name of order's Supplier
-    order_status = Column(Enum(OrderStatusEnum), nullable=False, default=OrderStatusEnum.PENDING) # Status of order, default is pending
+    order_status = Column(String, nullable=False, default="PENDING") # Status of order, default is pending
     order_receive = Column(DateTime, server_default=func.now()) # Date of when Approval got the order
-    approval_date = Column(DateTime, server_onupdate=func.now(), nullable=True) # Will be set when Status change, can be null
+    approval_date = Column(DateTime, onupdate=func.now(), nullable=True) # Will be set when Status change, can be null
