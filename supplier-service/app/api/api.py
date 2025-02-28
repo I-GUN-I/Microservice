@@ -12,7 +12,7 @@ router = APIRouter()
 # Response_model is the return response format, in this case it a List of Supplier objects
 @router.get("/suppliers/", response_model=List[schemas.Supplier])
 
-# Injecthe Session (db) created by get_db() into the function
+# Inject the Session (db) created by get_db() into the function
 def get_all_suppliers(db: Session = Depends(get_db)):
     """Retrieve all suppliers."""
     return services.get_all_suppliers(db)
