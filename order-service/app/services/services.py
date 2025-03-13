@@ -21,16 +21,12 @@ def get_all_orders(db: Session):
 def create_order(db: Session, order: schemas.OrderCreate):
     """Create a new order and assign a suitable supplier using an external API."""
     # Get suitable supplier from supplier-service and raise error (raise_for_status) if fail to fetch
-    try:
-        response = requests.get(
-            SUPPLIER_SERVICE_URL,
-            params={"product_name": order.product, "order_quantity": order.amount},
-        )
-        response.raise_for_status()
-        best_supplier = response.json()
-    # Raise error if API can't find a suitable supplier
-    except requests.exceptions.RequestException:
-        raise ValueError(f"No suitable supplier was found.")
+    response = requests.get(
+        SUPPLIER_SERVICE_URL,
+        params={"product_name": order.product, "order_quantity": order.amount},
+    )
+    response.raise_for_status()
+    best_supplier = response.json()
 
     # Create the Order model with object OrderCreate data and suitable supplier details from the API response
     db_order = models.Orders(
@@ -43,6 +39,7 @@ def create_order(db: Session, order: schemas.OrderCreate):
     db.add(db_order)
     db.commit()
     db.refresh(db_order)
+    
     # Publish db_order data to rabbitMQ
     rabbitmq.publish_order({
         "order_id": db_order.id,
