@@ -24,7 +24,7 @@ def save_order(order_data):
             order_price=order_data["order_price"],
             order_supplier=order_data["supplier_name"]
         )
-        # Add approval ot db
+        # Add approval to db
         db.add(approval)
         db.commit()
         print(f"Order save in Approval ID '{approval.id}'")

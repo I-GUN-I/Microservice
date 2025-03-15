@@ -28,6 +28,7 @@ def create_order(db: Session, order: schemas.OrderCreate):
         )
         response.raise_for_status()
         best_supplier = response.json()
+    
     # Raise error if API can't find a suitable supplier
     except requests.exceptions.RequestException:
         raise ValueError(f"No suitable supplier was found.")
@@ -43,6 +44,7 @@ def create_order(db: Session, order: schemas.OrderCreate):
     db.add(db_order)
     db.commit()
     db.refresh(db_order)
+
     # Publish db_order data to rabbitMQ
     rabbitmq.publish_order({
         "order_id": db_order.id,
